@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonPrev = findViewById(R.id.buttonPrev);
         imageView = findViewById(R.id.image);
 
-        initMemoryCache();
+        memoryCache = initMemoryCache();
 
         buttonNext.setOnClickListener(this);
         buttonPrev.setOnClickListener(this);
@@ -56,10 +56,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         queue = Volley.newRequestQueue(this);
     }
 
-    private void initMemoryCache() {
+    private LruCache<String, Bitmap> initMemoryCache() {
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
         final int cacheSize = maxMemory / 8;
-        memoryCache = new LruCache<String, Bitmap>(cacheSize) {
+        return new LruCache<String, Bitmap>(cacheSize) {
             @Override
             protected int sizeOf(String key, Bitmap bitmap) {
                 return bitmap.getByteCount() / 1024;
@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getNewCat() {
-        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, getCatUrl, null, new Response.Listener<JSONArray>() {
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, getCatUrl, null, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
                 try {
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        queue.add(jsonObjectRequest);
+        queue.add(jsonArrayRequest);
     }
 
     private Bitmap compressCatImage(Bitmap origBitmap){
@@ -113,17 +113,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (byteCountInMB < 2) {
             origBitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
-            decompressed = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
         }  else if (byteCountInMB < 3) {
             origBitmap.compress(Bitmap.CompressFormat.JPEG, 70, out);
-            decompressed = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
         } else if (byteCountInMB < 4) {
             origBitmap.compress(Bitmap.CompressFormat.JPEG, 40, out);
-            decompressed = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
         } else {
             origBitmap.compress(Bitmap.CompressFormat.JPEG, 30, out);
-            decompressed = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
         }
+        decompressed = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
         return decompressed;
     }
 
