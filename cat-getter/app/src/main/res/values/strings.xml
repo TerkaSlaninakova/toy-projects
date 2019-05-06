@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">It\'s a cat getter 🐱!</string>
+    <string name="prev">← meow</string>
+    <string name="next">meow →</string>
+    <string name="textView"> </string>
+</resources>
